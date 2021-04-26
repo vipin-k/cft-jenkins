@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   MyRoleName:
     Type: String
-    Default: 'k8slab-readonly-role'
+    Default: 'k8slabR-readonly-role'
 Resources:
   ReadOnlyRole:
     Type: 'AWS::IAM::Role'
@@ -17,7 +17,6 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess'
-        - 'arn:aws:iam::aws:policy/IAMReadOnlyAccess'
       Policies:
         - PolicyName: sts-assume-role-policy
           PolicyDocument:
