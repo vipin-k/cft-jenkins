@@ -1,0 +1,69 @@
+pipeline {
+    agent any
+    environment{
+        AWS_ACCESS_KEY_ID = credentials('aws_access_key_id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws_secret_access_key')
+
+    }
+    parameters {
+        choice(
+        name: 'myParameter',
+        choices: "Create\nUpdate",
+        description: 'Select the Option' )
+        }
+    stages{
+        stage('Clone sources'){
+        steps{
+		git branch: 'main',
+        url: 'https://github.com/vipin-k/cft-jenkins.git'
+            }
+        }
+        stage('Upload file on S3'){
+        steps{
+        sh 'aws s3 cp k8slab-radonly-role.yml s3://ddc3-cloudformation-us-east-1'
+        }
+        }
+        stage('Create Stack Set'){
+        when{
+            expression { params.myParameter == 'Create' }
+        }
+        steps{
+        sh 'aws cloudformation create-stack-set \
+        --stack-set-name my-read-set7 \
+        --template-url https://ddc3-cloudformation-us-east-1.s3.amazonaws.com/k8slab-radonly-role.yml \
+        --administration-role-arn arn:aws:iam::739596034298:role/AWSCloudFormationStackSetAdministrationRole \
+        --execution-role-name AWSCloudFormationStackSetExecutionRole \
+        --region us-east-1 \
+        --capabilities CAPABILITY_NAMED_IAM'
+        echo "Wait to complete Create Stack Set"
+        sleep(time: 300, unit: "SECONDS")
+         } 
+        }
+        stage('Update Stack Set'){
+        when{
+            expression { params.myParameter == 'Update' }
+        }
+        steps{
+        sh 'aws cloudformation update-stack-set \
+        --stack-set-name my-read-set7 \
+        --template-url https://ddc3-cloudformation-us-east-1.s3.amazonaws.com/k8slab-radonly-role.yml \
+        --administration-role-arn arn:aws:iam::739596034298:role/AWSCloudFormationStackSetAdministrationRole \
+        --execution-role-name AWSCloudFormationStackSetExecutionRole \
+        --region us-east-1 \
+        --capabilities CAPABILITY_NAMED_IAM'
+        echo "Wait to complete Update Stack Set"
+        sleep(time: 300, unit: "SECONDS")
+        }
+        }
+        stage('Add stack into stack set'){
+        steps{
+        sh 'aws cloudformation create-stack-instances \
+        --stack-set-name my-read-set7 \
+        --accounts 739596034298 578124968738 \
+        --region us-east-1 \
+        --regions us-east-1 \
+        --operation-preferences FailureToleranceCount=0,MaxConcurrentCount=1'
+        }
+        }
+    }
+}
