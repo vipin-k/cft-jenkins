@@ -17,7 +17,6 @@ Resources:
             Action: 'sts:AssumeRole'
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess'
-        - 'arn:aws:iam::aws:policy/IAMReadOnlyAccess'
       Policies:
         - PolicyName: sts-assume-role-policy
           PolicyDocument:
