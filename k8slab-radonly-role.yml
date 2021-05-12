@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Parameters:
   MyRoleName:
     Type: String
-    Default: 'k8slabRW-readonly-role'
+    Default: 'k8slabRWP-readonly-role'
 Resources:
   ReadOnlyRole:
     Type: 'AWS::IAM::Role'
